@@ -10,13 +10,10 @@ if __name__ == '__main__':
     lexer = CompilerLexer(dados)
     output = ''
     for tok in lexer.getAllTokens():
-        output += (tok.text, tok.type, '\n')
-    with open('output.txt', 'w+', 'utf-8') as saida:
-        saida.write(output)
+        output += str(tok.text) + ' ' + '-'*(10-len(str(tok.text))) + ' ' + str(tok.type) + '\n'
     lexer.reset()
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)
     tree = parser.prog()
-    # print(tree.toStringTree())
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    with open('output.txt', 'w+') as saida:
+        saida.write(output)
