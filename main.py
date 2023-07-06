@@ -14,6 +14,6 @@ if __name__ == '__main__':
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)
     tree = parser.prog()
-    print(tree.toStringTree())
+    # print(tree.toStringTree())
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

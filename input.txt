@@ -1,4 +1,5 @@
 main:
     var:
     const VALOR = 3.14;
+    cont VALOR = 4;
 end

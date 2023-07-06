@@ -2,25 +2,26 @@ grammar Compiler;
 
 prog: decFuncao* main;
 
-decFuncao: NAME '(' (VARTYPE VARNAME ','?)* ')' ':' ( 'void' | VARTYPE ) 'end';
+// Declaração de função
+decFuncao: NAMEFUNCTION argsFunc ')' ':' ( 'void' | VARTYPE ) decVar* comandos* 'end';
+argsFunc: (VARTYPE VARNAME(',')?)*;
 
+//Função principal
 main: 'main' ':' decVar* comandos* 'end';
 
 // Declaração de variável
 decVar: 'var' ':' varlist+;
 varlist: (VARNAME ','?)+ ':' VARTYPE ';' | consts ';';
-consts: 'const' ((VARNAME '=' ('"'VARNAME'"' | VALINT | VALFLOAT ))','?)+;
+consts: 'const' ((VARNAME '=' (STRING | VALINT | VALFLOAT | VALBOOL ))','?)+;
 
+// Tipos de comandos existentes
 comandos: 'COMANDO';
 
-
-VARTYPE: 'int'
-        | 'str'
-        | 'float'
-        ;
-
+VARTYPE: 'int' | 'str' | 'float' | 'bool';
+VALBOOL: 'true' | 'false' ;
+NAMEFUNCTION: [a-zA-Z]+ ('('|' ''(');
 VARNAME: ([a-zA-Z]+([0-9]+)*);
-NAME: [a-zA-Z]+;
+STRING: '"'([a-zA-Z]*[0-9]*)'"';
 VALFLOAT: ([0-9]+'.'[0-9]+);
 VALINT: [0-9]+;
 

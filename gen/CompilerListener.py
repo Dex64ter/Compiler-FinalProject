@@ -26,6 +26,15 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompilerParser#argsFunc.
+    def enterArgsFunc(self, ctx:CompilerParser.ArgsFuncContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#argsFunc.
+    def exitArgsFunc(self, ctx:CompilerParser.ArgsFuncContext):
+        pass
+
+
     # Enter a parse tree produced by CompilerParser#main.
     def enterMain(self, ctx:CompilerParser.MainContext):
         pass
@@ -53,21 +62,21 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompilerParser#comandos.
-    def enterComandos(self, ctx:CompilerParser.ComandosContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#comandos.
-    def exitComandos(self, ctx:CompilerParser.ComandosContext):
-        pass
-
-
     # Enter a parse tree produced by CompilerParser#consts.
     def enterConsts(self, ctx:CompilerParser.ConstsContext):
         pass
 
     # Exit a parse tree produced by CompilerParser#consts.
     def exitConsts(self, ctx:CompilerParser.ConstsContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#comandos.
+    def enterComandos(self, ctx:CompilerParser.ComandosContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#comandos.
+    def exitComandos(self, ctx:CompilerParser.ComandosContext):
         pass
 
 
