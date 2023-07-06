@@ -8,8 +8,11 @@ if __name__ == '__main__':
     dados = FileStream('input.txt')
     # dados = InputStream("hello Raimundo, Santos, Moura.")
     lexer = CompilerLexer(dados)
+    output = ''
     for tok in lexer.getAllTokens():
-        print(tok.text, tok.type)
+        output += (tok.text, tok.type, '\n')
+    with open('output.txt', 'w+', 'utf-8') as saida:
+        saida.write(output)
     lexer.reset()
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)

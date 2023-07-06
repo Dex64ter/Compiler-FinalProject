@@ -1,5 +1,13 @@
+media( float n1, float n2, int n3 ) : float
+ var:
+    const m2 = "ola";
+    const M = 10;
+    n1, n2, n3 : int;
+end
+
 main:
     var:
-    const VALOR = 3.14;
-    cont VALOR = 4;
+
+        const VALOR = 3.14;
+        cont VALOR = 4;
 end
