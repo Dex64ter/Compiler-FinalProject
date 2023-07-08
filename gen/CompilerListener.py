@@ -80,5 +80,41 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompilerParser#funcprint.
+    def enterFuncprint(self, ctx:CompilerParser.FuncprintContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#funcprint.
+    def exitFuncprint(self, ctx:CompilerParser.FuncprintContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#funcinput.
+    def enterFuncinput(self, ctx:CompilerParser.FuncinputContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#funcinput.
+    def exitFuncinput(self, ctx:CompilerParser.FuncinputContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#condicional.
+    def enterCondicional(self, ctx:CompilerParser.CondicionalContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#condicional.
+    def exitCondicional(self, ctx:CompilerParser.CondicionalContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#cmdWhile.
+    def enterCmdWhile(self, ctx:CompilerParser.CmdWhileContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#cmdWhile.
+    def exitCmdWhile(self, ctx:CompilerParser.CmdWhileContext):
+        pass
+
+
 
 del CompilerParser
