@@ -1,13 +1,35 @@
-media( float n1, float n2, int n3 ) : float
+fatorial (int fat) : int
+    if (fat > 1):
+      print (fat);
+      return fat * fatorial(fat - 1) ;
+    else:
+      return 1;
+    end
+end
+
+mostrarMedia (int v1, int v2) : void
  var:
-    const m2 = "ola";
-    const M = 10;
-    n1, n2, n3 : int;
+    x : float;
+    y : int;
+    x = (v1+v2)/2;
+  print ("Resultado: ", x);
+end
+
+media (float n1, float n2) : float
+ var:
+    m : float;
+    m = (n1 + n2)/2;
+ return m;
 end
 
 main:
-    var:
-
-        const VALOR = 3.14;
-        const VALOR = 4;
+ var:
+    numero : int;
+    n1, n2 : int;
+ print ("Programa Fatorial. Digite o valor?");
+ scanf(numero);
+ print (fatorial(numero));
+ print ("Programa Media. Digite o valores?");
+ scanf(n1, n2);
+ print (mostrarMedia(n1, n2));
 end
