@@ -27,7 +27,7 @@ main: 'main' ':' decVar* comandos* 'end';
 // Declaração de variável
 decVar: 'var' ':' varlist+;
 varlist: (VARNAME ','?)+ ':' VARTYPE ';' | consts ';';
-consts: 'const' ((IGUALDADE (STRING | VALINT | VALFLOAT | VALBOOL | VARNAME ))','?)+;
+consts: 'const' ((VARNAME ('='|' =') (STRING | VALINT | VALFLOAT | VALBOOL | VARNAME ))','?)+;
 
 // Estrutura de impressão
 funcprint: PRINT (VARNAME | STRING | expressaoAritmetica) (',' (VARNAME | STRING | expressaoAritmetica ) )* ');';
@@ -37,13 +37,13 @@ funcinput: SCAN VARNAME (',' VARNAME)* ');';
 
 // Estrutura condicional
 condicional: CMDIF expressaoBooleana '):' comandos+ ((condElse) | 'end');
-condElse: CMDELSE comandos+ 'end';
+condElse: CMDELSE comandos+;
 
 // Estrutura de repetição
-cmdWhile: CMDWHILE expressaoBooleana '):' comandos+ 'end';
+cmdWhile: CMDWHILE expressaoBooleana '):' comandos+ ('break;')* 'end';
 
 // Operações matemáticas
-opMath: IGUALDADE expressaoAritmetica';';
+opMath: VARNAME ('='|' =') expressaoAritmetica';';
 expressaoAritmetica: termo
     | termo '+' expressaoAritmetica
     | termo '-' expressaoAritmetica
@@ -68,12 +68,12 @@ condicao: valorBool
     | expressaoRelacional
     ;
 expressaoRelacional: expressaoAritmetica operadorRelacional expressaoAritmetica;
-operadorRelacional: '=='
-    | '!='
-    | '<'
-    | '<='
-    | '>'
-    | '>='
+operadorRelacional: ' == '
+    | ' != '
+    | ' < '
+    | ' <= '
+    | ' > '
+    | ' >= '
     ;
 valorBool: 'true' | 'false' ;
 operadorLogico: 'and' | 'or' | 'not';
@@ -86,7 +86,6 @@ PRINT: 'print (';
 SCAN: 'scanf(';
 
 // Igualdade e retorno
-IGUALDADE: VARNAME ('='|' =');
 RETORNO: 'return ';
 
 // Valores, tipos, tokens, etc
@@ -98,5 +97,8 @@ STRING: '"'([ çáâàêéíóúãa-zÇÁÂÀÃÊÉÍÓÚA-Z.,;:!?]* [ 0-9]* PON
 VALFLOAT: ([0-9]+'.'[0-9]+);     // identificador de números do tipo float
 VALINT: [0-9]+;       // identificador de números do tipo int
 PONTUACAO: [.,;:!?];
+
+COMMENT: '/*' .*? '*/' -> skip;
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 WS: [ \t\r\n] -> skip;
