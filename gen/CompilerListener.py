@@ -35,6 +35,51 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompilerParser#call.
+    def enterCall(self, ctx:CompilerParser.CallContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#call.
+    def exitCall(self, ctx:CompilerParser.CallContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#callFunction.
+    def enterCallFunction(self, ctx:CompilerParser.CallFunctionContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#callFunction.
+    def exitCallFunction(self, ctx:CompilerParser.CallFunctionContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#valsCallFunc.
+    def enterValsCallFunc(self, ctx:CompilerParser.ValsCallFuncContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#valsCallFunc.
+    def exitValsCallFunc(self, ctx:CompilerParser.ValsCallFuncContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#return.
+    def enterReturn(self, ctx:CompilerParser.ReturnContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#return.
+    def exitReturn(self, ctx:CompilerParser.ReturnContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#comandos.
+    def enterComandos(self, ctx:CompilerParser.ComandosContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#comandos.
+    def exitComandos(self, ctx:CompilerParser.ComandosContext):
+        pass
+
+
     # Enter a parse tree produced by CompilerParser#main.
     def enterMain(self, ctx:CompilerParser.MainContext):
         pass
@@ -71,15 +116,6 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompilerParser#comandos.
-    def enterComandos(self, ctx:CompilerParser.ComandosContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#comandos.
-    def exitComandos(self, ctx:CompilerParser.ComandosContext):
-        pass
-
-
     # Enter a parse tree produced by CompilerParser#funcprint.
     def enterFuncprint(self, ctx:CompilerParser.FuncprintContext):
         pass
@@ -107,12 +143,111 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompilerParser#condElse.
+    def enterCondElse(self, ctx:CompilerParser.CondElseContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#condElse.
+    def exitCondElse(self, ctx:CompilerParser.CondElseContext):
+        pass
+
+
     # Enter a parse tree produced by CompilerParser#cmdWhile.
     def enterCmdWhile(self, ctx:CompilerParser.CmdWhileContext):
         pass
 
     # Exit a parse tree produced by CompilerParser#cmdWhile.
     def exitCmdWhile(self, ctx:CompilerParser.CmdWhileContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#opMath.
+    def enterOpMath(self, ctx:CompilerParser.OpMathContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#opMath.
+    def exitOpMath(self, ctx:CompilerParser.OpMathContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#expressaoAritmetica.
+    def enterExpressaoAritmetica(self, ctx:CompilerParser.ExpressaoAritmeticaContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#expressaoAritmetica.
+    def exitExpressaoAritmetica(self, ctx:CompilerParser.ExpressaoAritmeticaContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#termo.
+    def enterTermo(self, ctx:CompilerParser.TermoContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#termo.
+    def exitTermo(self, ctx:CompilerParser.TermoContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#fator.
+    def enterFator(self, ctx:CompilerParser.FatorContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#fator.
+    def exitFator(self, ctx:CompilerParser.FatorContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#expressaoBooleana.
+    def enterExpressaoBooleana(self, ctx:CompilerParser.ExpressaoBooleanaContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#expressaoBooleana.
+    def exitExpressaoBooleana(self, ctx:CompilerParser.ExpressaoBooleanaContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#condicao.
+    def enterCondicao(self, ctx:CompilerParser.CondicaoContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#condicao.
+    def exitCondicao(self, ctx:CompilerParser.CondicaoContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#expressaoRelacional.
+    def enterExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#expressaoRelacional.
+    def exitExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#operadorRelacional.
+    def enterOperadorRelacional(self, ctx:CompilerParser.OperadorRelacionalContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#operadorRelacional.
+    def exitOperadorRelacional(self, ctx:CompilerParser.OperadorRelacionalContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#valorBool.
+    def enterValorBool(self, ctx:CompilerParser.ValorBoolContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#valorBool.
+    def exitValorBool(self, ctx:CompilerParser.ValorBoolContext):
+        pass
+
+
+    # Enter a parse tree produced by CompilerParser#operadorLogico.
+    def enterOperadorLogico(self, ctx:CompilerParser.OperadorLogicoContext):
+        pass
+
+    # Exit a parse tree produced by CompilerParser#operadorLogico.
+    def exitOperadorLogico(self, ctx:CompilerParser.OperadorLogicoContext):
         pass
 
 
