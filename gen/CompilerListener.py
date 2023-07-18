@@ -242,14 +242,5 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompilerParser#operadorLogico.
-    def enterOperadorLogico(self, ctx:CompilerParser.OperadorLogicoContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#operadorLogico.
-    def exitOperadorLogico(self, ctx:CompilerParser.OperadorLogicoContext):
-        pass
-
-
 
 del CompilerParser

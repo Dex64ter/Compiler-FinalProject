@@ -3,22 +3,22 @@ grammar Compiler;
 prog: decFuncao* main;
 
 // Declaração de função
-decFuncao: NAMEFUNCTION argsFunc ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
-argsFunc: (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ')';    // argumentos da função
-call: callFunction';' ;         // chamada de função com ;
-callFunction: NAMEFUNCTION valsCallFunc? ')'; // (')'|');')
+decFuncao: VARNAME '(' argsFunc ')' ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
+argsFunc: (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ;    // argumentos da função
+call: callFunction';' ;      // chamada de função com ;
+callFunction: VARNAME valsCallFunc? ')'; // (')'|');')
 valsCallFunc: (expressaoAritmetica) ((',' expressaoAritmetica)*)?;      // valores da chamada de função
 return: RETORNO (expressaoBooleana | expressaoAritmetica) ';';      // função de retorno
 
 
 // Tipos de comandos existentes
-comandos: funcinput+
-    | funcprint+
-    | opMath+
-    | condicional+
-    | cmdWhile+
-    | call+
-    | return+
+comandos: funcinput
+    | funcprint
+    | opMath
+    | condicional
+    | cmdWhile
+    | call
+    | return
     ;
 
 //Função principal
@@ -27,23 +27,23 @@ main: 'main' ':' decVar* comandos* 'end';
 // Declaração de variável
 decVar: 'var' ':' varlist+;
 varlist: (VARNAME ','?)+ ':' VARTYPE ';' | consts ';';
-consts: 'const' ((VARNAME ('='|' =') (STRING | VALINT | VALFLOAT | VALBOOL | VARNAME ))','?)+;
+consts: 'const' ((VARNAME ('=') (STRING | VALINT | VALFLOAT | VALBOOL | VARNAME ))','?)+;//--
 
 // Estrutura de impressão
-funcprint: PRINT (VARNAME | STRING | expressaoAritmetica) (',' (VARNAME | STRING | expressaoAritmetica ) )* ');';
+funcprint: PRINT '(' (expressaoAritmetica) (',' (expressaoAritmetica ) )* ');';
 
 // Estrutura de entrada
-funcinput: SCAN VARNAME (',' VARNAME)* ');';
+funcinput: SCAN '(' VARNAME (',' VARNAME)* ');';
 
 // Estrutura condicional
-condicional: CMDIF expressaoBooleana '):' comandos+ ((condElse) | 'end');
+condicional: CMDIF '(' expressaoBooleana ')' ':' comandos+ ((condElse) | 'end');
 condElse: CMDELSE comandos+;
 
 // Estrutura de repetição
-cmdWhile: CMDWHILE expressaoBooleana '):' comandos+ ('break;')* 'end';
+cmdWhile: CMDWHILE '(' expressaoBooleana ')' ':' comandos+ ('break;')* 'end';
 
 // Operações matemáticas
-opMath: VARNAME ('='|' =') expressaoAritmetica';';
+opMath: VARNAME ('=') expressaoAritmetica';'; //-
 expressaoAritmetica: termo
     | termo '+' expressaoAritmetica
     | termo '-' expressaoAritmetica
@@ -55,45 +55,43 @@ termo: fator
 fator: VARNAME
     | VALFLOAT
     | VALINT
+    | STRING
     | callFunction
     | '('expressaoAritmetica')'
     ;
 
 // Operações lógicas
 expressaoBooleana: condicao         // Lógica para expressões booleanas
-    | expressaoBooleana operadorLogico expressaoBooleana
     | '(' expressaoBooleana ')'
     ;
 condicao: valorBool
     | expressaoRelacional
     ;
 expressaoRelacional: expressaoAritmetica operadorRelacional expressaoAritmetica;
-operadorRelacional: ' == '
-    | ' != '
-    | ' < '
-    | ' <= '
-    | ' > '
-    | ' >= '
+operadorRelacional: '=='
+    | '!='
+    | '<'
+    | '<='
+    | '>'
+    | '>='
     ;
 valorBool: 'true' | 'false' ;
-operadorLogico: 'and' | 'or' | 'not';
 
 // Funções nativas
-CMDWHILE: 'while(';
-CMDIF: 'if (';
+CMDWHILE: 'while';
+CMDIF: 'if';
 CMDELSE: 'else:';
-PRINT: 'print (';
-SCAN: 'scanf(';
+PRINT: 'print';
+SCAN: 'scanf';
 
 // Igualdade e retorno
-RETORNO: 'return ';
+RETORNO: 'return';
 
 // Valores, tipos, tokens, etc
 VARTYPE: 'int' | 'str' | 'float' | 'bool'; // Tipo de variável
 VALBOOL: 'true' | 'false' ;     // Valor de variável booleana
-NAMEFUNCTION: [a-zA-Z]+ ('('|' ''(');    // início do escopo de uma função
 VARNAME: ([a-zA-Z]+([0-9]+)*);    // declaração de nome de função
-STRING: '"'([ çáâàêéíóúãa-zÇÁÂÀÃÊÉÍÓÚA-Z.,;:!?]* [ 0-9]* PONTUACAO?)'"';  // identificador de strings
+STRING: '"'([ çáâàêéíóúãa-zÇÁÂÀÃÊÉÍÓÚA-Z0-9.,;:!?]* PONTUACAO?)'"';  // identificador de strings
 VALFLOAT: ([0-9]+'.'[0-9]+);     // identificador de números do tipo float
 VALINT: [0-9]+;       // identificador de números do tipo int
 PONTUACAO: [.,;:!?];
