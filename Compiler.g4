@@ -6,7 +6,7 @@ prog: decFuncao* main;
 decFuncao: VARNAME '(' argsFunc ')' ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
 argsFunc: (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ;    // argumentos da função
 call: callFunction';' ;      // chamada de função com ;
-callFunction: VARNAME valsCallFunc? ')'; // (')'|');')
+callFunction: VARNAME '(' valsCallFunc? ')'; // (')'|');')
 valsCallFunc: (expressaoAritmetica) ((',' expressaoAritmetica)*)?;      // valores da chamada de função
 return: RETORNO (expressaoBooleana | expressaoAritmetica) ';';      // função de retorno
 
@@ -40,7 +40,7 @@ condicional: CMDIF '(' expressaoBooleana ')' ':' comandos+ ((condElse) | 'end');
 condElse: CMDELSE comandos+;
 
 // Estrutura de repetição
-cmdWhile: CMDWHILE '(' expressaoBooleana ')' ':' comandos+ ('break;')* 'end';
+cmdWhile: CMDWHILE '(' expressaoBooleana (')' ':' | '):') comandos+ ('break;')* 'end';
 
 // Operações matemáticas
 opMath: VARNAME ('=') expressaoAritmetica';'; //-
