@@ -8,9 +8,9 @@ if __name__ == '__main__':
     dados = FileStream('input.txt')
     # dados = InputStream("hello Raimundo, Santos, Moura.")
     lexer = CompilerLexer(dados)
-    output = ''
+    output = ""
     for tok in lexer.getAllTokens():    # Ajeitando a string para saída adequada no arquivo
-        output += str(tok.text) + ' ' + '-'*(10-len(str(tok.text))) + ' ' + str(tok.type) + '\n'
+        output += '<'+str(tok.type) + ',' + str(tok.text) +'>'+ '\n'
     lexer.reset()
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)
