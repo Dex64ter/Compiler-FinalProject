@@ -3,14 +3,25 @@ from antlr4 import *
 from gen.CompilerLexer import CompilerLexer
 from gen.CompilerParser import CompilerParser
 
-# Press the green button in the gutter to run the script.
+
 if __name__ == '__main__':
     dados = FileStream('input.txt')
-    # dados = InputStream("hello Raimundo, Santos, Moura.")
     lexer = CompilerLexer(dados)
+
+    with open('gen/Compiler.tokens', 'r+') as tT:
+        Tokens = tT.readlines()
+    typeTokens = {}
+    for i in Tokens:
+        j = -2
+        key =[]
+        while i[j].isdigit():
+            key.insert(0, i[j])
+            j-=1
+        typeTokens[''.join(key)] = i[0:len(i)+j]
+
     output = ""
     for tok in lexer.getAllTokens():    # Ajeitando a string para saída adequada no arquivo
-        output += '<'+str(tok.type) + ',' + str(tok.text) +'>'+ '\n'
+        output += '<'+ typeTokens[str(tok.type)] + ',' + str(tok.text) +'>'+ '\n'
     lexer.reset()
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)
