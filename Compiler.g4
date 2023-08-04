@@ -30,13 +30,13 @@ varlist: (VARNAME ','?)+ ':' VARTYPE ';' | consts ';';
 consts: 'const' ((VARNAME ('=') (STRING | VALINT | VALFLOAT | VALBOOL | VARNAME ))','?)+;//--
 
 // Estrutura de impressão
-funcprint: PRINT '(' (expressaoAritmetica) (',' (expressaoAritmetica ) )* ');';
+funcprint: PRINT '(' (expressaoAritmetica) (',' (expressaoAritmetica ) )* ')'';';
 
 // Estrutura de entrada
-funcinput: SCAN '(' VARNAME (',' VARNAME)* ');';
+funcinput: SCAN '(' VARNAME (',' VARNAME)* ')'';';
 
 // Estrutura condicional
-condicional: CMDIF '(' expressaoBooleana ')' ':' comandos+ ((condElse) | 'end');
+condicional: CMDIF '(' expressaoBooleana ')'':' comandos+ ((condElse) | 'end');
 condElse: CMDELSE comandos+;
 
 // Estrutura de repetição
