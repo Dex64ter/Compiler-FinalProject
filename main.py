@@ -11,18 +11,31 @@ if __name__ == '__main__':
     # Manipulação do arquivo de tokens para acessar o ID de cada TOKEN pelo nome
     with open('gen/Compiler.tokens', 'r+') as tT:
         Tokens = tT.readlines()
+
     typeTokens = {}
-    for i in Tokens:
+    i = 0
+    count = 0
+    while i < len(Tokens):
         j = -2
-        key =[]
-        while i[j].isdigit():
-            key.insert(0, i[j])
-            j-=1
-        typeTokens[''.join(key)] = i[0:len(i)+j] # Dicionário de tokens
+        key = []
+        if "__" not in Tokens[i]:
+            count += 1
+            while Tokens[i][j].isdigit():
+                key.insert(0, Tokens[i][j])
+                j -= 1
+
+            k = ''.join(key)
+            if k not in typeTokens:
+                typeTokens[k] = Tokens[i][0:len(Tokens[i]) + j]  # Dicionário de tokens
+        i += 1
+
+    for k, v in typeTokens.items():
+        print(k,'--->', v)
 
     output = ""
     for tok in lexer.getAllTokens():    # Manipulando a string para saída adequada no arquivo
-        output += '<'+ typeTokens[str(tok.type)] + ',' + str(tok.text) +'>'+ '\n'
+        output += '<' + typeTokens[str(tok.type)] + ',' + str(tok.text) + '>' + '\n'
+
     lexer.reset()
     stream = CommonTokenStream(lexer)
     parser = CompilerParser(stream)

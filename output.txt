@@ -5,19 +5,19 @@
 <')',)>
 <':',:>
 <VARTYPE,int>
-<'if',if>
+<CMDIF,if>
 <'(',(>
 <VARNAME,fat>
 <'>',>>
 <VALINT,1>
 <')',)>
 <':',:>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <VARNAME,fat>
 <')',)>
 <';',;>
-<'return',return>
+<RETORNO,return>
 <VARNAME,fat>
 <'*',*>
 <VARNAME,fatorial>
@@ -27,8 +27,8 @@
 <VALINT,1>
 <')',)>
 <';',;>
-<'else:',else:>
-<'return',return>
+<CMDELSE,else:>
+<RETORNO,return>
 <VALINT,1>
 <';',;>
 <'end',end>
@@ -62,7 +62,7 @@
 <'/',/>
 <VALINT,2>
 <';',;>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <STRING,"Resultado: ">
 <',',,>
@@ -96,7 +96,7 @@
 <'/',/>
 <VALINT,2>
 <';',;>
-<'return',return>
+<RETORNO,return>
 <VARNAME,m>
 <';',;>
 <'end',end>
@@ -114,17 +114,17 @@
 <':',:>
 <VARTYPE,int>
 <';',;>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <STRING,"Programa Fatorial. Digite o valor?">
 <')',)>
 <';',;>
-<'scanf',scanf>
+<SCAN,scanf>
 <'(',(>
 <VARNAME,numero>
 <')',)>
 <';',;>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <VARNAME,fatorial>
 <'(',(>
@@ -132,19 +132,19 @@
 <')',)>
 <')',)>
 <';',;>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <STRING,"Programa Media. Digite o valores?">
 <')',)>
 <';',;>
-<'scanf',scanf>
+<SCAN,scanf>
 <'(',(>
 <VARNAME,n1>
 <',',,>
 <VARNAME,n2>
 <')',)>
 <';',;>
-<'print',print>
+<PRINT,print>
 <'(',(>
 <VARNAME,mostrarMedia>
 <'(',(>
