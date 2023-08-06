@@ -233,14 +233,5 @@ class CompilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompilerParser#valorBool.
-    def enterValorBool(self, ctx:CompilerParser.ValorBoolContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#valorBool.
-    def exitValorBool(self, ctx:CompilerParser.ValorBoolContext):
-        pass
-
-
 
 del CompilerParser
