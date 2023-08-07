@@ -43,7 +43,7 @@ condElse: CMDELSE ':' comandos+;
 cmdWhile: CMDWHILE '(' expressaoBooleana ')' ':' comandos+ ('break;')* 'end';
 
 // Operações matemáticas
-opMath: VARNAME ('=') expressaoAritmetica';'; //-
+opMath: VARNAME ('=') ( expressaoAritmetica | expressaoBooleana )';'; //-
 expressaoAritmetica: termo
     | termo '+' expressaoAritmetica
     | termo '-' expressaoAritmetica
@@ -55,7 +55,6 @@ termo: fator
 fator: VARNAME
     | VALFLOAT
     | VALINT
-    | VALBOOL
     | STRING
     | callFunction
     | '('expressaoAritmetica')'
@@ -76,7 +75,8 @@ operadorRelacional: '=='
     | '>'
     | '>='
     ;
-valorBool: VALBOOL
+valorBool: VARNAME
+    | VALBOOL
     ;
 // Funções nativas
 CMDWHILE: 'while';
