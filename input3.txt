@@ -12,14 +12,14 @@ main:
     var:
         a, b : int;
         c : bool;
-    print("Digite um número inteiro:");
+    print("Digite um numero inteiro:");
     input(a);
-    print("Qual número vc quer verificar se é divisor do primeiro?");
+    print("Qual numero vc quer verificar se  divisor do primeiro?");
     input(b);
     c = ehDivisor(b,a);
     if (c == true):
-        print("é divisor");
+        print("eh divisor");
     else:
-        print("não é divisor");
+        print("nao eh divisor");
 
 end
