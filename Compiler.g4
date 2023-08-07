@@ -37,10 +37,10 @@ funcinput: SCAN '(' VARNAME (',' VARNAME)* ')'';';
 
 // Estrutura condicional
 condicional: CMDIF '(' expressaoBooleana ')'':' comandos+ ((condElse) | 'end');
-condElse: CMDELSE comandos+;
+condElse: CMDELSE ':' comandos+;
 
 // Estrutura de repetição
-cmdWhile: CMDWHILE '(' expressaoBooleana (')' ':' | '):') comandos+ ('break;')* 'end';
+cmdWhile: CMDWHILE '(' expressaoBooleana ')' ':' comandos+ ('break;')* 'end';
 
 // Operações matemáticas
 opMath: VARNAME ('=') expressaoAritmetica';'; //-
@@ -55,6 +55,7 @@ termo: fator
 fator: VARNAME
     | VALFLOAT
     | VALINT
+    | VALBOOL
     | STRING
     | callFunction
     | '('expressaoAritmetica')'
@@ -78,7 +79,7 @@ operadorRelacional: '=='
 // Funções nativas
 CMDWHILE: 'while';
 CMDIF: 'if';
-CMDELSE: 'else:';
+CMDELSE: 'else';
 PRINT: 'print';
 SCAN: 'scanf';
 
