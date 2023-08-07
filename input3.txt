@@ -1,0 +1,22 @@
+ehDivisor(int divisor, int dividendo) : bool
+    while (dividendo > divisor) :
+        dividendo = dividendo - divisor;
+    end
+    if (dividendo == 0 ) :
+        return true;
+    else :
+        return false;
+end
+
+main:
+ var:
+    numero : int;
+    n1, n2 : int;
+ n1 = 10;
+ print("Contador:");
+ while (n1 > 0):
+    print(n1);
+    n1 = n1 - 1;
+ end
+ print("Fim do contador");
+end
