@@ -17,7 +17,7 @@ main:
     print("Qual numero vc quer verificar se  divisor do primeiro?");
     input(b);
     c = ehDivisor(b,a);
-    if (c == true):
+    if (c):
         print("eh divisor");
     else:
         print("nao eh divisor");
