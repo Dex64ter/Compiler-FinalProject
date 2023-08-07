@@ -29,9 +29,6 @@ if __name__ == '__main__':
                 typeTokens[k] = Tokens[i][0:len(Tokens[i]) + j]  # Dicionário de tokens
         i += 1
 
-    for k, v in typeTokens.items():
-        print(k,'--->', v)
-
     output = ""
     for tok in lexer.getAllTokens():    # Manipulando a string para saída adequada no arquivo
         output += '<' + typeTokens[str(tok.type)] + ',' + str(tok.text) + '>' + '\n'

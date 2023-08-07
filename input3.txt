@@ -4,18 +4,20 @@ ehDivisor(int divisor, int dividendo) : bool
     end
     if (dividendo == 0 ) :
         return true;
-    else :
+    else:
         return false;
 end
 
 main:
     var:
         a, b : int;
+        c : bool;
     print("Digite um número inteiro:");
     input(a);
     print("Qual número vc quer verificar se é divisor do primeiro?");
     input(b);
-    if (ehDivisor(b, a)):
+    c = ehDivisor(b,a);
+    if (c == true):
         print("é divisor");
     else:
         print("não é divisor");
