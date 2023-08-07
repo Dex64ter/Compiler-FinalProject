@@ -5,7 +5,6 @@ def nextToken():
     if index_token_atual<len(tokens):
         index_token_atual +=1
         token_atual = tokens[index_token_atual]
-        #print(token_atual, index_token_atual)
         return token_atual
     else:
         return ("EOF", "end of file")
@@ -17,32 +16,35 @@ def formerToken():
         token_atual = tokens[index_token_atual]
         return token_atual
 
-
 def parser_prog():
     token = tokens[index_token_atual]
     while True:
-        if token[0]=="VARNAME":
+        if tokens[index_token_atual][0]=="VARNAME":
             token = nextToken()
             parser_decFuncao()
-        elif token[1] == "main":
+        elif tokens[index_token_atual][1] == "main":
             break
         else:
             raise SyntaxError("expected Declaração de Função")
         token = nextToken()
     parser_main()
 
-
 def parser_main():
-    token = tokens[index_token_atual]
+    token = nextToken()
     if token[0] != "':'":
         raise SyntaxError("Expected ':'")
     token = nextToken()
-    while index_token_atual<len(tokens) and token[0] != "'end'":
-        print("analisar linha 25 gramatica")
-
-    if token[0] != "'end'":
-        raise SyntaxError("Expected 'end'")
-
+    while token[0] != "'end'":
+        if token[1] == "var":
+            parser_decVar()
+        else:
+            parser_comando()
+        token = tokens[index_token_atual]
+        if token[1] == "end":
+            break
+        token = nextToken()
+    if token[1] != "end":
+        raise SyntaxError("expected 'end'")
 
 def parser_decFuncao():
     token = tokens[index_token_atual]
@@ -50,6 +52,7 @@ def parser_decFuncao():
         raise SyntaxError("Expected (")
     token = nextToken()
     parser_argFunc()
+    token = tokens[index_token_atual]
     if tokens[index_token_atual][1] != ")":
         raise SyntaxError("Expected )")
     token = nextToken()
@@ -64,11 +67,12 @@ def parser_decFuncao():
             parser_decVar()
         elif token[1]=="return":
             parser_retorno()
-        elif token[1] == "end":
-            break
         else:
             parser_comando()
-        token = nextToken()
+        token=tokens[index_token_atual]
+        if token[1] == "end":
+            break
+
     if token[1] != "end":
         raise SyntaxError("expected 'end'")
 
@@ -80,7 +84,7 @@ def parser_argFunc():
     if token[0] != "VARNAME":
         raise SyntaxError("expected 'VARNAME'")
     token = nextToken()
-    while token[0] == ",":
+    while token[1] == ",":
         token = nextToken()
         if token[0]!="VARTYPE":
             raise SyntaxError ("expected VARTYPE")
@@ -105,39 +109,51 @@ def parser_callFunction():
     token = nextToken()
     if token[1] != ")":
         parser_valsCallFunc()
-        a = nextToken()
-    if token[1] != ")":
-        raise SyntaxError("expected ')'")
+        token = tokens[index_token_atual]
+        if token[1] != ")":
+            raise SyntaxError("expected ')'")
+    token = nextToken()
 
 def parser_valsCallFunc():
     parser_expressaoAritmetica()
-    token = nextToken()
-    while token[1] == ',':
-        parser_expressaoAritmetica()
+    while tokens[index_token_atual][1] == ',':
         token = nextToken()
+        parser_expressaoAritmetica()
 
 def parser_retorno():
     token = tokens[index_token_atual]
     if token[1] != "return":
         raise SyntaxError("expected return")
     token = nextToken()
-    if token[0]=="VALBOOL":
-        parser_expressaoBooleana()
-    elif token[0] in ["VALINT", "VALFLOAT", "STRING", "VARNAME"]:
-        parser_expressaoAritmetica()
-    token = nextToken()
+    if token[1]=="(":
+        nextToken()
+        if token[0]=="VALBOOL":
+            parser_expressaoBooleana()
+        elif token[0] in ["VALINT", "VALFLOAT", "STRING", "VARNAME"]:
+            parser_expressaoAritmetica()
+        token = tokens[index_token_atual]
+        if token[1] != ")":
+            raise SyntaxError("expected )")
+    else:
+        if token[0]=="VALBOOL":
+            parser_expressaoBooleana()
+        elif token[0] in ["VALINT", "VALFLOAT", "STRING", "VARNAME"]:
+            parser_expressaoAritmetica()
+        token = nextToken()
     if token[1]!=';':
         raise SyntaxError("expected ';'")
+    token = nextToken()
 
 def parser_comando():
     token = tokens[index_token_atual]
+
     if token[1] == "scanf":
         parser_funcInput()
     elif token[1] == "print":
         parser_funcPrint()
     elif token[0] == "VARNAME":
         token = nextToken()
-        if token[1] in ['+','-','/','*']:
+        if token[1] == "=":
             token = formerToken()
             parser_opMath()
         else:
@@ -153,8 +169,10 @@ def parser_comando():
 
 def parser_decVar():
     token = tokens[index_token_atual]
+
     if token[1] != "var":
         raise SyntaxError ("expected var")
+    token = nextToken()
     if token[1] != ":":
         raise SyntaxError ("expected :")
     token = nextToken()
@@ -163,27 +181,35 @@ def parser_decVar():
 def parser_varList():
     token = tokens[index_token_atual]
     if token[0] == "VARNAME":
-        token = nextToken()
-        if token[1] == ',':
-            while token[1] == ",":
+        while token[0] == "VARNAME":
+            token = nextToken()
+            if token[1] == ',':
+                while token[1] == ",":
+                    token = nextToken()
+                    if token[0] != "VARNAME":
+                        raise SyntaxError("expected VARNAME")
+                    token = nextToken()
+                    if token[1] == ':':
+                        break
+                    if token[1] != ',':
+                        raise SyntaxError("expected ',' or ':'")
+            elif token[1]== "=":
+                token = formerToken()
+                parser_opMath()
+            if token[1]== ":":
                 token = nextToken()
-                if token[0] != "VARNAME":
-                    raise SyntaxError("expected VARNAME")
+                if token[0] != "VARTYPE":
+                    raise SyntaxError("expected VARTYPE")
                 token = nextToken()
-                if token[1] == ':':
-                    break
-                if token[1] != ',':
-                    raise SyntaxError("expected ',' or ':'")
-        token = nextToken()
-        if token[0] != "VARTYPE":
-            raise SyntaxError ("expected VARTYPE")
+            token = tokens[index_token_atual]
+            if token[1]!=";":
+                raise SyntaxError ("expected ';'")
+            token = nextToken()
+        token = formerToken()
     elif token[0] =="const":
         parser_const()
     else:
         raise SyntaxError("expected VARNAME or CONST")
-    token = nextToken()
-    if token[1] != ";":
-        raise SyntaxError("expected ';'")
 
 def parser_const():
     token = tokens[index_token_atual]
@@ -220,11 +246,11 @@ def parser_funcPrint():
         raise SyntaxError("expected '('")
     token = nextToken()
     parser_expressaoAritmetica()
-    token = nextToken()
+    token = tokens[index_token_atual]
     while token[1]==",":
         token = nextToken()
         parser_expressaoAritmetica()
-        token = nextToken()
+        token = tokens[index_token_atual]
     if token[1]!=")":
         raise SyntaxError("Expected ')'")
     token = nextToken()
@@ -271,23 +297,27 @@ def parser_condicional():
     token = nextToken()
     while True:
         parser_comando()
-        token = nextToken()
-        if token[1] in ["else","end"]:
+        print(tokens[index_token_atual],"----------")
+        if tokens[index_token_atual][1] in ["else","end"]:
             break
+    token=tokens[index_token_atual]
     if token[1] == "else":
+        token = nextToken()
         parser_condElse()
-    if token[1] != "end":
-        raise SyntaxError("Expected 'End'")
+    elif token[1] == "end":
+        token = nextToken() ,
+    else:
+        raise SyntaxError("expected 'else' or 'end'")
 
 def parser_condElse():
     token = tokens[index_token_atual]
-    if token[1] != "else":
-        raise SyntaxError ("Expected 'else'")
-    token = nextToken()
+    if token[1] != ":":
+        raise SyntaxError("expected :")
+    nextToken()
     while True:
         parser_comando()
-        token = nextToken()
-        if token[1] == "end":
+        token=tokens[index_token_atual]
+        if token[1] in ["end"]:
             break
 
 def parser_cmdWhile():
@@ -299,53 +329,49 @@ def parser_cmdWhile():
         raise SyntaxError ("expected '('")
     token = nextToken()
     parser_expressaoBooleana()
-    token = nextToken()
-    if token[1] not in [')','):']:
-        raise SyntaxError("expected ')' or '):'")
+    token = tokens[index_token_atual]
+    if token[1] != ")":
+        raise SyntaxError("expected ')'")
     token = nextToken()
     if token[1] != ":":
-        raise SyntaxError ("expected ':'")
+        raise SyntaxError("expected ')'")
     token = nextToken()
     while True:
         if token[1]=="end":
+            token = nextToken()
             break
-        if token[1] == "break;":
+        elif token[1] == "break;":
             break
         parser_comando()
         token = nextToken()
-    if token.value != "end":
-        raise SyntaxError("Expected 'end'")
+
 
 def parser_opMath():
     token = tokens[index_token_atual]
     if token[0]!= "VARNAME":
         raise SyntaxError("Expected 'VARNAME'")
     token =nextToken()
-    if token[0]!= "=":
+    if token[1]!= "=":
         raise SyntaxError("Expected '='")
     token = nextToken()
     parser_expressaoAritmetica()
-    token = nextToken()
-    if token[0]!= ";":
+    token = tokens[index_token_atual]
+    if token[1]!= ";":
         raise SyntaxError("Expected ';'")
 
 def parser_expressaoAritmetica():
     parser_termo()
-    token = nextToken()
-    if token[1] in ["+","-"]:
+    token = tokens[index_token_atual]
+    if token[1] in ["+", "-"]:
         token = nextToken()
         parser_expressaoAritmetica()
-    else:
-        token = formerToken()
-
 
 def parser_termo():
     parser_fator()
-    if tokens[index_token_atual] in ["*","/"]:
-        nextToken()
+    token = tokens[index_token_atual]
+    if token[1] in ["*", "/"]:
+        token = nextToken()
         parser_termo()
-    else:
-        token = formerToken()
 
 def parser_fator():
     token = tokens[index_token_atual]
@@ -353,15 +379,16 @@ def parser_fator():
         token = nextToken()
     elif token[0] == "VARNAME":
         token = nextToken()
-        if token == "(":
+        if token[1] == "(":
             token = formerToken()
             parser_callFunction()
     elif token[1] == "(":
         token = nextToken()
         parser_expressaoAritmetica()
-        token = nextToken()
+        token = tokens[index_token_atual]
         if token[1] != ")":
             raise SyntaxError("expected ')'")
+        nextToken()
     else:
         raise SyntaxError("Expected VALFLOAT','VALINT','STRING' or 'VARNAME")
 
@@ -378,22 +405,14 @@ def parser_expressaoBooleana():
 
 def parser_condicao():
     token = tokens[index_token_atual]
-    if token[1] in ['true','false']:
-        parser_valorBool()
-    else:
+    if token[0] != "VALBOOL":
         parser_expressaoRelacional()
 
-def parser_valorBool():
-    token = tokens[index_token_atual]
-    if token[0] != "VALBOL":
-        raise SyntaxError("expected Boolean Value")
 
 def parser_expressaoRelacional():
     parser_expressaoAritmetica()
-    token = nextToken()
     parser_operadorRelacional()
     parser_expressaoAritmetica()
-    token = nextToken()
 
 def parser_operadorRelacional():
     token = tokens[index_token_atual]
@@ -404,14 +423,18 @@ def parser_operadorRelacional():
 def parser_init():
     inicializar()
     return parser_prog()
+
 def inicializar():
     global tokens, index_token_atual
     a = open("output.txt", "r").read().splitlines()
     for b in range(len(a)):
-        s =a[b][1:-1].split(",",1)
-        a[b] = tuple([s[0],s[1]])
-    tokens = a
+        s = a[b][1:-1]
+        if s[1]==",":
+            newtuple = ("','",",")
+            tokens.append(newtuple)
+        else:
+            s =a[b][1:-1].split(",",1)
+            tokens.append(tuple([s[0],s[1]]))
     index_token_atual = 0
-
 
 parser_init()
