@@ -9,14 +9,15 @@ ehDivisor(int divisor, int dividendo) : bool
 end
 
 main:
- var:
-    numero : int;
-    n1, n2 : int;
- n1 = 10;
- print("Contador:");
- while (n1 > 0):
-    print(n1);
-    n1 = n1 - 1;
- end
- print("Fim do contador");
+    var:
+        a, b : int;
+    print("Digite um número inteiro:");
+    input(a);
+    print("Qual número vc quer verificar se é divisor do primeiro?");
+    input(b);
+    if (ehDivisor(b, a)):
+        print("é divisor");
+    else:
+        print("não é divisor");
+
 end

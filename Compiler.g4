@@ -65,7 +65,8 @@ fator: VARNAME
 expressaoBooleana: condicao         // Lógica para expressões booleanas
     | '(' expressaoBooleana ')'
     ;
-condicao: expressaoRelacional
+condicao: valorBool
+    | expressaoRelacional
     ;
 expressaoRelacional: expressaoAritmetica operadorRelacional expressaoAritmetica;
 operadorRelacional: '=='
@@ -75,7 +76,8 @@ operadorRelacional: '=='
     | '>'
     | '>='
     ;
-
+valorBool: VALBOOL
+    ;
 // Funções nativas
 CMDWHILE: 'while';
 CMDIF: 'if';

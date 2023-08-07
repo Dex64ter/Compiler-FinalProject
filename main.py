@@ -5,7 +5,7 @@ from gen.CompilerParser import CompilerParser
 
 
 if __name__ == '__main__':
-    dados = FileStream('input.txt')
+    dados = FileStream('input3.txt')
     lexer = CompilerLexer(dados)
 
     # Manipulação do arquivo de tokens para acessar o ID de cada TOKEN pelo nome
