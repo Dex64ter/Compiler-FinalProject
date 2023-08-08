@@ -75,8 +75,7 @@ operadorRelacional: '=='
     | '>'
     | '>='
     ;
-valorBool: VARNAME
-    | VALBOOL
+valorBool: VALBOOL
     ;
 // Funções nativas
 CMDWHILE: 'while';

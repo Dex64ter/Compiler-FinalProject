@@ -13,11 +13,11 @@ main:
         a, b : int;
         c : bool;
     print("Digite um numero inteiro:");
-    input(a);
+    scanf(a);
     print("Qual numero vc quer verificar se  divisor do primeiro?");
-    input(b);
+    scanf(b);
     c = ehDivisor(b,a);
-    if (c):
+    if (c != 0):
         print("eh divisor");
     else:
         print("nao eh divisor");
