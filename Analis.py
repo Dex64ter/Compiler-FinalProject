@@ -125,6 +125,7 @@ def parser_valsCallFunc():
 
 def parser_retorno():
     token = tokens[index_token_atual]
+
     if token[1] != "return":
         raise SyntaxError("expected return")
     token = nextToken()
@@ -140,15 +141,18 @@ def parser_retorno():
     else:
         if token[0]=="VALBOOL":
             parser_expressaoBooleana()
+            nextToken()
         elif token[0] in ["VALINT", "VALFLOAT", "STRING", "VARNAME"]:
             parser_expressaoAritmetica()
-        token = tokens[index_token_atual]
+    token = tokens[index_token_atual]
     if token[1]!=';':
         raise SyntaxError("expected ';'")
     nextToken()
 
 def parser_comando():
     token = tokens[index_token_atual]
+    if token[1]==";":
+        token = nextToken()
     if token[1] == "scanf":
         parser_funcInput()
     elif token[1] == "print":
@@ -163,14 +167,11 @@ def parser_comando():
     elif token[1] == "if":
         parser_condicional()
     elif token[1] == "while":
-        print(tokens[index_token_atual], index_token_atual,"entra While")
         parser_cmdWhile()
-        print(tokens[index_token_atual], index_token_atual, "sai While")
     elif token[1] == "return":
         parser_retorno()
     else:
         raise SyntaxError("Invalid Command")
-
 def parser_decVar():
     token = tokens[index_token_atual]
     if token[1] != "var":
@@ -209,7 +210,6 @@ def parser_varList():
         parser_const()
     else:
         raise SyntaxError("expected VARNAME or CONST")
-    print(tokens[index_token_atual], index_token_atual)
 def parser_const():
     token = tokens[index_token_atual]
     if token[1] != "const":
@@ -339,7 +339,9 @@ def parser_cmdWhile():
         raise SyntaxError("expected ')'")
     token = nextToken()
     while True:
-        if token[1]=="end":
+        if tokens[index_token_atual][1] == ";":
+            nextToken()
+        if tokens[index_token_atual][1]=="end":
             token = nextToken()
             break
         elif token[1] == "break;":
@@ -403,7 +405,6 @@ def parser_opMath():
                     parser_expressaoAritmetica()
     if token[1] != ";":
         raise SyntaxError("Expected ';'")
-    print(tokens[index_token_atual], index_token_atual)
 def parser_expressaoAritmetica():
     parser_termo()
     token = tokens[index_token_atual]
