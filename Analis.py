@@ -512,4 +512,4 @@ def inicializar():
     index_token_atual = 0
 
 
-parser_init()
+# parser_init()
