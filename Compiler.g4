@@ -48,10 +48,12 @@ expressaoAritmetica: termo
     | termo '+' expressaoAritmetica
     | termo '-' expressaoAritmetica
     ;
+
 termo: fator
     | fator '*' termo
     | fator '/' termo
     ;
+
 fator: VARNAME
     | VALFLOAT
     | VALINT

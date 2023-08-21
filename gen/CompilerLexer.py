@@ -1,4 +1,4 @@
-# Generated from C:/Users/davij/PycharmProjects/Compiler-FinalProject\Compiler.g4 by ANTLR 4.12.0
+# Generated from C:/Users/ryant/OneDrive/Área de Trabalho/2023.1/COMPILADORES/Compiler-FinalProject\Compiler.g4 by ANTLR 4.12.0
 from antlr4 import *
 from io import StringIO
 import sys

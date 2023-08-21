@@ -11,9 +11,10 @@
           <option name="encoding" value="" />
           <option name="pkg" value="" />
           <option name="language" value="Python3" />
+          <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (Compiler-FinalProject)" project-jdk-type="Python SDK" />
 </project>
