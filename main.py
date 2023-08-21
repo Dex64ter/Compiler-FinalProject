@@ -1,5 +1,6 @@
 from antlr4 import *
 
+from Analis import *
 from gen.CompilerLexer import CompilerLexer
 from gen.CompilerParser import CompilerParser
 
@@ -40,3 +41,5 @@ if __name__ == '__main__':
     #print(tree.toStringTree())
     with open('output.txt', 'w+') as saida:     # Imprimindo os tokens e os tipos dos tokens no arquivo
         saida.write(output)
+
+    print(parser_init())
