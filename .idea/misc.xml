@@ -8,7 +8,7 @@
           <option name="autoGen" value="true" />
           <option name="outputDir" value="" />
           <option name="libDir" value="" />
-          <option name="encoding" value="" />
+          <option name="encoding" value="utf-8" />
           <option name="pkg" value="" />
           <option name="language" value="Python3" />
           <option name="generateVisitor" value="true" />

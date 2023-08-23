@@ -9,7 +9,7 @@ class CustomListener:
 def translate_type_name(vartype):
     descriptor = {
         'NoneType': 'V',
-        'boolean': 'Z',
+        'bool': 'Z',
         'int': 'I',
         'integer': 'I',
         'real': 'F',
@@ -24,7 +24,7 @@ class JasminCodeGenerator:
 
     def __init__(self, name, symbol_table):
         self.name = name
-        self.file = self.initialize_file(f"{name}.j", symbol_table)
+        self.initialize_file(f"{name}.j", symbol_table)
 
     def initialize_file(self, filename, symbol_table):
         self.file = open(filename, 'w+')
@@ -176,7 +176,7 @@ class JasminCodeGenerator:
                 imul
                 """
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fmul
@@ -193,7 +193,7 @@ class JasminCodeGenerator:
                 idiv
                 """
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fdiv
@@ -228,7 +228,7 @@ class JasminCodeGenerator:
                 if_icmp{} true{}
                 """.format(cmp[op], label_id)
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 if{} true{}
@@ -264,7 +264,7 @@ class JasminCodeGenerator:
                 istore {}
                 """.format(self.top_index)
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fstore {}
@@ -282,7 +282,7 @@ class JasminCodeGenerator:
                      iload {}
                      """.format(var_data.address)
                 )
-            elif var_data.type == 'real':
+            elif var_data.type == 'float':
                 self.__write(
                     """
                     fload {}
@@ -294,12 +294,6 @@ class JasminCodeGenerator:
                     aload {}
                     """.format(var_data.address)
                 )
-        else:  # global var
-            self.__write(
-                """
-                getstatic {}/{} {}
-                """.format(self.name, var, translate_type_name(self.symbol_table[var].type))
-            )
         return self.write_value_store(var_data.type)
 
     def write_variable_store(self, var, address):
@@ -312,7 +306,7 @@ class JasminCodeGenerator:
                     istore {}
                     """.format(var_data.address, address)
                 )
-            elif var_data.type == 'real':
+            elif var_data.type == 'float':
                 self.__write(
                     """
                     fload {}
@@ -350,7 +344,7 @@ class JasminCodeGenerator:
                 invokevirtual java/util/Scanner/nextInt()I
                 """.format(translate_type_name(self.symbol_table[name].type))
             )
-        elif t == 'real':
+        elif t == 'float':
             self.__write(
                 """
                 invokevirtual java/util/Scanner/nextFloat()F
@@ -374,7 +368,7 @@ class JasminCodeGenerator:
                 iadd
                 """
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fadd
@@ -397,7 +391,7 @@ class JasminCodeGenerator:
                 isub
                 """
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fsub
@@ -412,7 +406,7 @@ class JasminCodeGenerator:
                 iload {}
                 """.format(val)
             )
-        elif type == 'real':
+        elif type == 'float':
             self.__write(
                 """
                 fload {}
@@ -440,7 +434,7 @@ class JasminCodeGenerator:
             i2f
             """
         )
-        return self.write_value_store("real")
+        return self.write_value_store("float")
 
     def write_dowhileenter_code(self, loop_idx):
         self.__write(

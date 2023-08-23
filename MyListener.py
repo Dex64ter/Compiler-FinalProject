@@ -1,6 +1,9 @@
-from JasminGenerator import JasminCodeGenerator, CustomListener
-from gen.CompilerListener import CompilerListener
-from gen.CompilerParser import CompilerParser
+from antlr4 import *
+from antlr4.tree.Tree import TerminalNodeImpl
+
+from JasminGenerator import *
+from gen.CompilerParser import *
+from gen.CompilerListener import *
 from CustomExceptions import *
 
 
@@ -10,217 +13,357 @@ class MyListener(CompilerListener):
     stack_block = []
 
     def __init__(self, filename):
+        self.label_id = 0
+        self.argument_info = {}  # Store argument names and types for each function
         self.jasmin = JasminCodeGenerator(filename, self.symbol_table)
         self.label_id = 0
+
+    def __is_numeric(self, type):
+        return (type == 'real') or (type == 'int') or (type == 'integer')
+
+    def flag(self, ctx_print):
+        declaration = ctx_print.getText()
+        print(f"{declaration}")
 
     def __is_inside_function(self):
         return 'function' in self.stack_block
 
-    # Enter a parse tree produced by CompilerParser#prog.
     def enterProg(self, ctx: CompilerParser.ProgContext):
-        pass
+        print('Enter Prog', self.flag(ctx))
 
-    # Exit a parse tree produced by CompilerParser#prog.
     def exitProg(self, ctx: CompilerParser.ProgContext):
-        self.jasmin.close_file()
+        pass
+        print('Exit Prog', self.flag(ctx))
 
-    # Enter a parse tree produced by CompilerParser#decFuncao.
     def enterDecFuncao(self, ctx: CompilerParser.DecFuncaoContext):
+        print('Enter DecFunc', self.flag(ctx))
         self.stack_block.append('function')
-        function_id = ctx.ID(0).getText()
-        if function_id in self.symbol_table:
-            raise AlreadyDeclaredError(ctx.start.line, function_id)
+        func_name = ctx.VARNAME().getText()
+        print(ctx.VARNAME().getText(), "\n", ctx.VARTYPE().getText())
+        if func_name in self.symbol_table:
+            raise AlreadyDeclaredError(ctx.start.line, func_name)
+        func_type = ctx.VARTYPE().getText()
 
-        self.symbol_table[function_id] = MyListener(type=ctx.TYPE(0).getText())
+        self.symbol_table[func_name] = CustomListener(type=f"{func_type}")
 
         args = []
         args_names = []
-        content = list(zip(ctx.ID()[1:], ctx.TYPE()[1:]))
-        for arg_id, arg_type in content:
-            if arg_id.getText() in self.symbol_table:
-                raise AlreadyDeclaredError(ctx.start.line, arg_id.getText())
-            self.symbol_table[arg_id.getText()] = MyListener(type=arg_type.getText(), local=True)
+        varnames = []
+        vartypes = []
+
+        # Iterate through the children of ctx and filter for VARNAME and VARTYPE tokens
+        for child in ctx.children:
+            if isinstance(child, TerminalNodeImpl):
+                if child.getSymbol().type == CompilerParser.VARNAME:
+                    varnames.append(child.getText())
+                elif child.getSymbol().type == CompilerParser.VARTYPE:
+                    vartypes.append(child.getText())
+
+        # Zip varnames and vartypes together
+        content = list(zip(varnames[1:], vartypes[1:]))
+        print(content)
+        for arg_nm, arg_type in content:
+            if arg_nm.getText() in self.symbol_table:
+                raise AlreadyDeclaredError(ctx.start.line, arg_nm.getText())
+            self.symbol_table[arg_nm.getText()] = CustomListener(
+                type=arg_type.getText(), local=True)
             args.append(arg_type.getText())
-            args_names.append(arg_id.getText())
+            args_names.append(arg_nm.getText())
+        self.functions_args[func_name] = args
+        self.jasmin.write_function_declaration(func_name, args_names)
 
-        self.functions_args[function_id] = args
-        self.jasmin.write_function_declaration(function_id, args_names)
-
-    # Exit a parse tree produced by CompilerParser#decFuncao.
     def exitDecFuncao(self, ctx: CompilerParser.DecFuncaoContext):
+        print('Exit DecFunc', self.flag(ctx))
         self.jasmin.write_function_end()
         self.stack_block.pop()
 
-    # Enter a parse tree produced by CompilerParser#call.
-    def enterCall(self, ctx: CompilerParser.CallContext):
-        ctx_id = ctx.ID().getText()
-        if ctx_id not in self.symbol_table:
-            raise NonDeclaredVariableError(ctx.start.line, ctx_id)
+    def enterCallFunction(self, ctx: CompilerParser.CallFunctionContext):
+        print('Enter CallFunc', self.flag(ctx))
+        ctx_name = ctx.VARNAME().getText()
+        if ctx_name not in self.symbol_table:
+            raise NonDeclaredVariableError(ctx.start.line, ctx_name)
 
-    # Exit a parse tree produced by CompilerParser#call.
-    def exitCall(self, ctx: CompilerParser.CallContext):
-        function_id = ctx.ID().getText()
+    def exitCallFunction(self, ctx: CompilerParser.CallFunctionContext):
+        print('Exit CallFunc', self.flag(ctx))
+        ctx_name = ctx.VARNAME().getText()
+        argument_names = self.argument_info.get(ctx_name, {}).get("names", [])
+        argument_types = self.argument_info.get(ctx_name, {}).get("types", [])
 
-        if len(self.functions_args[function_id]) != len(ctx.expr()):
-            raise MissingArgument(ctx.start.line, len(self.functions_args[function_id]), len(ctx.expr()))
+        # Check if the number of arguments in the call matches the function's expected number of arguments
+        if len(argument_names) != len(ctx.valsCallFunc().expressaoAritmetica()):
+            raise ArgumentMismatchError(ctx.start.line, len(argument_names),
+                                        len(ctx.valsCallFunc().expressaoAritmetica()))
 
-        for expected, received in list(zip(self.functions_args[function_id], ctx.expr())):
+        for expected, received in list(zip(argument_names, ctx.valsCallFunc().expressaoAritmetica())):
             if expected != received.type:
                 raise UnexpectedTypeError(ctx.start.line, expected, received.type)
 
-        ctx.type = self.symbol_table[ctx.ID().getText()].type
+        ctx.type = self.symbol_table[ctx_name]
+        ctx.val = self.jasmin.write_function_call(ctx_name, argument_names, argument_types)
 
-    # Enter a parse tree produced by CompilerParser#callFunction.
-    def enterCallFunction(self, ctx: CompilerParser.CallFunctionContext):
-        pass
+    def enterValsCallFunc(self, ctx: CompilerParser.ValsCallFuncContext):
+        print('Enter ValsCallFunc', self.flag(ctx))
+        self.argument_expressions = []
 
-    # Exit a parse tree produced by CompilerParser#callFunction.
-    def exitCallFunction(self, ctx: CompilerParser.CallFunctionContext):
-        ctx.type = self.symbol_table[ctx.ID().getText()].type
-        args = []
-        types = []
-        for exp in ctx.expr():
-            args.append(exp.val)
-            types.append(exp.type)
-        ctx.val = self.jasmin.write_function_call(ctx.ID().getText(), args, types)
+    def exitValsCallFunc(self, ctx: CompilerParser.ValsCallFuncContext):
+        print('Exit ValsCallFunc', self.flag(ctx))
+        # Extract argument expressions and generate code to evaluate them
+        for arg_expr in ctx.expressaoAritmetica():
+            self.argument_expressions.append(arg_expr)
 
-    # Enter a parse tree produced by CompilerParser#return.
     def enterReturn(self, ctx: CompilerParser.ReturnContext):
+        print('Enter Return', self.flag(ctx))
         if not self.__is_inside_function():
             raise ReturnException(ctx.start.line)
 
-    # Exit a parse tree produced by CompilerParser#return.
     def exitReturn(self, ctx: CompilerParser.ReturnContext):
-        self.jasmin.write_function_return(ctx.expr().val, ctx.expr().type)
+        print('Exit Return', self.flag(ctx))
+        if ctx.opMathR().isBool:
+            self.jasmin.write_function_return(ctx.opMathR().val, ctx.opMathR().type)
+        else:
+            self.jasmin.write_function_return(ctx.opMathR().val, ctx.opMathR().type)
 
-    # Enter a parse tree produced by CompilerParser#comandos.
     def enterComandos(self, ctx: CompilerParser.ComandosContext):
-        pass
+        print('Enter Comandos', self.flag(ctx))
 
-    # Exit a parse tree produced by CompilerParser#comandos.
     def exitComandos(self, ctx: CompilerParser.ComandosContext):
-        pass
+        print('Exit Comandos', self.flag(ctx))
 
-    # Enter a parse tree produced by CompilerParser#main.
     def enterMain(self, ctx: CompilerParser.MainContext):
+        print('Enter Main', self.flag(ctx))
         self.jasmin.write_main_function_declaration()
 
-    # Exit a parse tree produced by CompilerParser#main.
     def exitMain(self, ctx: CompilerParser.MainContext):
+        print('Exit Main', self.flag(ctx))
         self.jasmin.write_main_function_end()
 
-    # Exit a parse tree produced by CompilerParser#decVar.
+    def enterDecVar(self, ctx: CompilerParser.DecVarContext):
+        print('Enter DecVar', self.flag(ctx))
+        if not self.__is_inside_function():
+            raise VariableDeclarationError(ctx.start.line, ctx.varlist().VARNAME())
+
     def exitDecVar(self, ctx: CompilerParser.DecVarContext):
-        token = ctx.ID()
-        if token.getText() in self.symbol_table:
-            raise AlreadyDeclaredError(ctx.start.line, token.getText())
-        self.symbol_table[token.getText()] = MyListener(address=0, type=ctx.TYPE().getText(), local=True)
-        self.jasmin.create_local(token.getText(), ctx.TYPE().getText())
+        print('Exit DecVar', self.flag(ctx))
 
-    # Exit a parse tree produced by CompilerParser#funcprint.
+    def enterVarlist(self, ctx: CompilerParser.VarlistContext):
+        print('Enter Varlist', self.flag(ctx))
+
+    def exitVarlist(self, ctx: CompilerParser.VarlistContext):
+        print('Exit Varlist', self.flag(ctx))
+        ctx_name = ctx.VARNAME().getText()
+        ctx_type = ctx.VARTYPE().getText()
+        if ctx_name in self.symbol_table:
+            raise AlreadyDeclaredError(ctx.start.line, ctx_name)
+        self.symbol_table[ctx_name] = CustomListener(
+            address=0, type=ctx_type, local=True)
+        self.jasmin.create_local(ctx_name, ctx_type)
+
+    def enterConsts(self, ctx: CompilerParser.ConstsContext):
+        print('Enter Consts', self.flag(ctx))
+
+    def exitConsts(self, ctx: CompilerParser.ConstsContext):
+        print('Exit Consts', self.flag(ctx))
+
+    def enterFuncprint(self, ctx: CompilerParser.FuncprintContext):
+        print('Enter Funcprint', self.flag(ctx))
+
     def exitFuncprint(self, ctx: CompilerParser.FuncprintContext):
-        type_val = []
-        for expr in ctx.expr():
-            type_val.append((expr.type, expr.val))
-        self.jasmin.print(type_val)
+        print('Exit Funcprint', self.flag(ctx))
+        val_type = []
+        for expr in ctx.expressaoAritmetica():
+            val_type.append((expr.type_, expr.val))
+        self.jasmin.print(val_type)
 
-    # Exit a parse tree produced by CompilerParser#funcinput.
+    def enterFuncinput(self, ctx: CompilerParser.FuncinputContext):
+        print('Enter Funcinput', self.flag(ctx))
+
     def exitFuncinput(self, ctx: CompilerParser.FuncinputContext):
-        ctx_id = ctx.ID().getText()
-        if ctx_id not in self.symbol_table:
-            raise NonDeclaredVariableError(ctx.start.line, ctx_id)
+        print('Exit Funcinput', self.flag(ctx))
+        ctx_name = ctx.VARNAME().getText()
+        if ctx_name not in self.symbol_table:
+            raise NonDeclaredVariableError(ctx.start.line, ctx_name)
+        self.jasmin.write_inputfunction_code(ctx_name)
 
-        self.jasmin.write_inputfunction_code(ctx_id)
-
-    # Enter a parse tree produced by CompilerParser#condicional.
     def enterCondicional(self, ctx: CompilerParser.CondicionalContext):
-        ctx.expr().inh_type = 'if'
+        print('Enter Condicional (IF)', self.flag(ctx))
+        ctx.expressaoBooleana().inh_type = 'if'
 
-    # Exit a parse tree produced by CompilerParser#condicional.
     def exitCondicional(self, ctx: CompilerParser.CondicionalContext):
-        if ctx.expr().type != 'boolean':
-            raise UnexpectedTypeError(ctx.start.line, 'boolean', ctx.expr().type)
-        self.jasmin.write_labelname('if_' + str(ctx.expr().end_label))
+        print('Exit Condicional (IF)', self.flag(ctx))
+        if ctx.expressaoBooleana().type != 'bool':
+            raise UnexpectedTypeError(
+                ctx.start.line, 'bool', ctx.expressaoBooleana().type)
+        self.jasmin.write_labelname('if_' + str(ctx.expressaoBooleana().end_label))
 
-    # Enter a parse tree produced by CompilerParser#cmdWhile.
+    def enterCondElse(self, ctx: CompilerParser.CondElseContext):
+        print('Enter CondElse (ELSE)', self.flag(ctx))
+
+    def exitCondElse(self, ctx: CompilerParser.CondElseContext):
+        print('Exit CondElse (ELSE)', self.flag(ctx))
+
     def enterCmdWhile(self, ctx: CompilerParser.CmdWhileContext):
-        ctx.expr().inh_type = 'while'
-        ctx.expr().inh = self.jasmin.write_dowhileenter_code(len(self.stack_block))
+        print('Enter CmdWhile', self.flag(ctx))
+        ctx.expressaoBooleana().inh_type = 'while'
+        ctx.expressaoBooleana().inh = self.jasmin.write_dowhileenter_code(len(self.stack_block))
         self.stack_block.append('loop')
 
-    # Exit a parse tree produced by CompilerParser#cmdWhile.
     def exitCmdWhile(self, ctx: CompilerParser.CmdWhileContext):
-        if ctx.expr().type != 'boolean':
-            raise UnexpectedTypeError(ctx.start.line, 'boolean', ctx.expr().type)
+        print('Exit CmdWhile', self.flag(ctx))
+        if ctx.expressaoBooleana().type != 'bool':
+            raise UnexpectedTypeError(
+                ctx.start.line, 'bool', ctx.expressaoBooleana().type)
         self.stack_block.pop()
         self.jasmin.write_dowhileexit_code(len(self.stack_block))
 
-    # Exit a parse tree produced by CompilerParser#opMath.
+    def exitVar_name(self, ctx: CompilerParser.Var_nameContext):
+        ctx_name = ctx.VARNAME().getText()
+
+        if ctx_name not in self.symbol_table:
+            raise NonDeclaredVariableError(ctx.start.line, ctx_name)
+        ctx.type_ = self.symbol_table[ctx_name].type_
+        ctx.val = self.jasmin.write_variable_load(ctx_name)
+
+    def exitFloat_value(self, ctx: CompilerParser.Float_valueContext):
+        print(f'Float Value: {ctx.getText()}')
+        ctx.type_ = 'float'
+        ctx.val = self.jasmin.write_store_code(ctx.getText(), ctx.type_)
+
+    def exitInt_value(self, ctx: CompilerParser.Int_valueContext):
+        print(f'Int_value: {ctx.getText()}')
+        ctx.type_ = 'int'
+        ctx.val = self.jasmin.write_store_code(ctx.getText(), ctx.type_)
+
+    def exitStr_val(self, ctx: CompilerParser.Str_valContext):
+        print(f'Str_val: {ctx.getText()}')
+        ctx.type_ = 'string'
+        ctx.val = self.jasmin.write_store_code(ctx.getText(), ctx.type_)
+
+    def exitFunc_call(self, ctx: CompilerParser.Func_callContext):
+        target = ctx.callFunction()
+        ctx.type_ = target.type_
+        ctx.val = target.val
+
+    def exitExpr(self, ctx: CompilerParser.ExprContext):
+        ctx.type_ = ctx.expr().type_
+        ctx.val = ctx.expr().val
+
+    def exitE_termo(self, ctx:CompilerParser.E_termoContext):
+        ctx.type_ = ctx.expr().type_
+        ctx.val = ctx.expr().val
+
+    def exitSum_minus(self, ctx:CompilerParser.Sum_minusContext):
+        if not self.__is_numeric(ctx.expressaoAritmetica().type_):
+            raise ExpressionTypeError(
+                ctx.start.line, ctx.op.text, ctx.expressaoAritmetica().type_
+            )
+        elif not self.__is_numeric(ctx.termo().type_):
+            raise ExpressionTypeError(
+                ctx.start.line, ctx.op.text, ctx.expressaoAritmetica().type_
+            )
+        elif ctx.termo().type_ == 'float' and ctx.expressaoAritmetica().type_ == 'float':
+            ctx.type_ = 'float'
+            val1, val2 = ctx.expressaoAritmetica().val, ctx.termo().val
+        elif ctx.expressaoAritmetica().type_ == 'float':
+            ctx.type_ = 'float'
+            val1 = ctx.expressaoAritmetica().val
+            val2 = self.jasmin.write_integertofloat_code(ctx.termo().val)
+        elif ctx.termo().type_ == 'float':
+            ctx.type_ = 'float'
+            val1 = self.jasmin.write_integertofloat_code(ctx.expressaoAritmetica().val)
+            val2 = ctx.termo().val
+        else:
+            ctx.type_ = 'int'
+            val1, val2 = ctx.expressaoAritmetica().val, ctx.termo().val
+
+        if ctx.op.text == '+':
+            ctx.val = self.jasmin.write_addoperator_code(ctx.type_, val1, val2)
+        else:
+            ctx.val = self.jasmin.write_suboperator_code(ctx.type_, val1, val2)
+
+
+    def exitE_factor(self, ctx:CompilerParser.E_factorContext):
+        ctx.type_ = ctx.expr().type_
+        ctx.val = ctx.expr().val
+
+    def exitTime_div(self, ctx:CompilerParser.Time_divContext):
+        if not self.__is_numeric(ctx.termo().type_):
+            raise ExpressionTypeError(
+                ctx.start.line, ctx.op.text, ctx.termo().type_
+            )
+        elif not self.__is_numeric(ctx.fator().type_):
+            raise ExpressionTypeError(
+                ctx.start.line, ctx.op.text, ctx.fator().type_
+            )
+        elif ctx.termo().type_ == 'float' and ctx.fator().type_ == 'float':
+            ctx.type_ = 'float'
+            val1, val2 = ctx.termo().val, ctx.fator().val
+        elif ctx.termo().type_ == 'float':
+            ctx.type_ = 'float'
+            val1 = ctx.termo().val
+            val2 = self.jasmin.write_integertofloat_code(ctx.fator().val)
+        elif ctx.fator().type_ == 'float':
+            ctx.type_ = 'float'
+            val1 = self.jasmin.write_integertofloat_code(ctx.termo().val)
+            val2 = ctx.fator().val
+        else:
+            ctx.type_ = 'int'
+            val1, val2 = ctx.termo().val, ctx.fator().val
+
+        if ctx.op.text == '*':
+            ctx.val = self.jasmin.write_multiplication_code(
+                ctx.type_, val1, val2)
+        else:
+            ctx.val = self.jasmin.write_division_code(ctx.type_, val1, val2)
+
+    def enterOpMath(self, ctx: CompilerParser.OpMathContext):
+        print('Enter OpMath', self.flag(ctx))
+        var_name = ctx.VARNAME().getText()
+        operator = ctx.getChild(1).getText()  # Assuming the operator is the second child node
+        expression = ctx.getChild(2)  # Get the expression context
+
+        # Access the return values specified in the grammar
+        type = ctx.type_
+        inh_type = ctx.inh_type
+        isBool = ctx.isBool
+        val = ctx.val
+
     def exitOpMath(self, ctx: CompilerParser.OpMathContext):
-        variable_name = ctx.VARNAME().getText()
-        operator = ctx.op.getText()
+        print('Exit OpMath', self.flag(ctx))
 
-        if ctx.expressaoAritmetica():
-            arith_expr = ctx.expressaoAritmetica()
-            result = self.evaluate_arithmetic_expression(arith_expr)
-        elif ctx.expressaoBooleana():
-            bool_expr = ctx.expressaoBooleana()
-            result = self.evaluate_boolean_expression(bool_expr)
+    def enterOpMathR(self, ctx: CompilerParser.OpMathRContext):
+        print('Enter OpMathR', self.flag(ctx))
+        expression = ctx.getChild(0)  # Get the expression context (can be either Aritmetica or Booleana)
 
-    # Exit a parse tree produced by CompilerParser#expressaoAritmetica.
-    def exitExpressaoAritmetica(self, ctx: CompilerParser.ExpressaoAritmeticaContext):
-        pass
+        # Access the return values specified in the grammar
+        type = ctx.type_
+        inh_type = ctx.inh_type
+        isBool = ctx.isBool
+        val = ctx.val
 
-    # Enter a parse tree produced by CompilerParser#termo.
-    def enterTermo(self, ctx: CompilerParser.TermoContext):
-        pass
+    def exitOpMathR(self, ctx: CompilerParser.OpMathRContext):
+        print('Exit OpMathR', self.flag(ctx))
 
-    # Exit a parse tree produced by CompilerParser#termo.
-    def exitTermo(self, ctx: CompilerParser.TermoContext):
-        pass
-
-    # Enter a parse tree produced by CompilerParser#fator.
-    def enterFator(self, ctx: CompilerParser.FatorContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#fator.
-    def exitFator(self, ctx: CompilerParser.FatorContext):
-        ctx.type = ctx.factor().type
-        ctx.val = ctx.factor().val
-
-    # Enter a parse tree produced by CompilerParser#expressaoBooleana.
     def enterExpressaoBooleana(self, ctx: CompilerParser.ExpressaoBooleanaContext):
-        pass
+        print('Enter ExpressaoBooleana', self.flag(ctx))
 
-    # Exit a parse tree produced by CompilerParser#expressaoBooleana.
     def exitExpressaoBooleana(self, ctx: CompilerParser.ExpressaoBooleanaContext):
-        pass
+        print('Exit ExpressaoBooleana', self.flag(ctx))
 
-    # Enter a parse tree produced by CompilerParser#condicao.
-    def enterCondicao(self, ctx: CompilerParser.CondicaoContext):
-        pass
+    def exitExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
+        ctx_t1 = ctx.expressaoAritmetica()
+        ctx_t2 = ctx.getChild(2)
 
-    # Exit a parse tree produced by CompilerParser#condicao.
-    def exitCondicao(self, ctx: CompilerParser.CondicaoContext):
-        pass
+        if ctx_t1.type_ != ctx_t2.type_:
+            raise ExpressionTypeError(
+                ctx.start.line, ctx.op.text, ctx_t1.type_, ctx_t2.type_
+            )
+        ctx.type_ = 'bool'
+        ctx.val = self.jasmin.write_equaloperator_code(ctx_t1.type_, ctx_t2.val,
+                                                       ctx_t2.type_, ctx_t2.val,
+                                                       self.label_id, ctx.op.text)
 
-    # Enter a parse tree produced by CompilerParser#expressaoRelacional.
-    def enterExpressaoRelacional(self, ctx: CompilerParser.ExpressaoRelacionalContext):
-        pass
+    def exitValorBool(self, ctx:CompilerParser.ValorBoolContext):
+        ctx.type_ = 'bool'
+        ctx.val = self.jasmin.write_store_code(
+            0 if ctx.getText() == 'False' else 1, ctx.type_)
 
-    # Exit a parse tree produced by CompilerParser#expressaoRelacional.
-    def exitExpressaoRelacional(self, ctx: CompilerParser.ExpressaoRelacionalContext):
-        pass
-
-    # Enter a parse tree produced by CompilerParser#operadorRelacional.
-    def enterOperadorRelacional(self, ctx: CompilerParser.OperadorRelacionalContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#operadorRelacional.
-    def exitOperadorRelacional(self, ctx: CompilerParser.OperadorRelacionalContext):
-        pass
-
-    # Exit a parse tree produced by CompilerParser#valorBool.
-    def exitValorBool(self, ctx: CompilerParser.ValorBoolContext):
-        ctx.type = 'boolean'
-        ctx.val = self.jasmin.write_store_code(0 if ctx.getText() == 'False' else 1, ctx.type)
