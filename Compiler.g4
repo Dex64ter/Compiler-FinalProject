@@ -6,15 +6,16 @@ prog: decFuncao* main;
 decFuncao: VARNAME '(' argsFunc ')' ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
 argsFunc: (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ;    // argumentos da função
 call: callFunction';' ;      // chamada de função com ;
-callFunction: VARNAME '(' valsCallFunc? ')'; // (')'|');')
+callFunction returns [type]: VARNAME '(' valsCallFunc? ')'; // (')'|');')
 valsCallFunc: (expressaoAritmetica) ((',' expressaoAritmetica)*)?;      // valores da chamada de função
-return: RETORNO (expressaoBooleana | expressaoAritmetica) ';';      // função de retorno
+return: RETORNO opMathR;      // função de retorno
 
 
 // Tipos de comandos existentes
 comandos: funcinput
     | funcprint
     | opMath
+    | opMathR
     | condicional
     | cmdWhile
     | call
@@ -43,39 +44,43 @@ condElse: CMDELSE ':' comandos+;
 cmdWhile: CMDWHILE '(' expressaoBooleana ')' ':' comandos+ ('break;')* 'end';
 
 // Operações matemáticas
-opMath: VARNAME ('=') ( expressaoAritmetica | expressaoBooleana )';'; //-
-expressaoAritmetica: termo
-    | termo '+' expressaoAritmetica
-    | termo '-' expressaoAritmetica
+opMath returns [type, isBool, val]: VARNAME ('=') ( expressaoAritmetica | expressaoBooleana )';';
+opMathR returns [type, isBool, val]: (  expressaoAritmetica | expressaoBooleana )';';//-
+
+expressaoAritmetica returns [type, isBool, val]: termo #e_termo
+    |expressaoAritmetica op=('+' | '-') termo   #sum_minus
     ;
-termo: fator
-    | fator '*' termo
-    | fator '/' termo
+
+termo returns [type, val]: fator    #e_factor
+    | termo op=('*' | '/') fator    #time_div
     ;
-fator: VARNAME
-    | VALFLOAT
-    | VALINT
-    | STRING
-    | callFunction
-    | '('expressaoAritmetica')'
+
+fator returns [type, val]: VARNAME   #var_name
+    | VALFLOAT  #float_value
+    | VALINT    #int_value
+    | STRING    #str_val
+    | callFunction #func_call
+    | '('expressaoAritmetica')' #expr
     ;
 
 // Operações lógicas
-expressaoBooleana: condicao         // Lógica para expressões booleanas
+expressaoBooleana returns [type, inh_type, isBool, val]: condicao         // Lógica para expressões booleanas
     | '(' expressaoBooleana ')'
     ;
-condicao: valorBool
+condicao returns [type, isBool, val]: valorBool
     | expressaoRelacional
     ;
-expressaoRelacional: expressaoAritmetica operadorRelacional expressaoAritmetica;
-operadorRelacional: '=='
+expressaoRelacional returns [type, isBool, val]
+    : expressaoAritmetica op=
+    ( '=='
     | '!='
     | '<'
     | '<='
     | '>'
     | '>='
-    ;
-valorBool: VALBOOL
+    )
+    expressaoAritmetica;
+valorBool returns [type, isBool, val]: VALBOOL
     ;
 // Funções nativas
 CMDWHILE: 'while';
