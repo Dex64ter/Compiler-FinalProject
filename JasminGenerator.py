@@ -8,11 +8,10 @@ class CustomListener:
 
 def translate_type_name(vartype):
     descriptor = {
-        'NoneType': 'V',
+        'None': 'V',
         'bool': 'Z',
         'int': 'I',
         'integer': 'I',
-        'real': 'F',
         'float': 'F',
         'string': 'Ljava/lang/String;',
     }
@@ -274,6 +273,7 @@ class JasminCodeGenerator:
         return self.top_index - 1
 
     def write_variable_load(self, var):
+        print(var, self.symbol_table)
         var_data = self.symbol_table[var]
         if var_data.local:  # local var
             if var_data.type == 'int' or var_data.type == 'boolean':
@@ -298,7 +298,7 @@ class JasminCodeGenerator:
 
     def write_variable_store(self, var, address):
         var_data = self.symbol_table[var]
-        if var_data.local == True:  # local var
+        if var_data.local:  # local var
             if var_data.type == 'int' or var_data.type == 'boolean':
                 self.__write(
                     """

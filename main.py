@@ -1,3 +1,5 @@
+import os
+
 from antlr4 import *
 
 from MyListener import MyListener
@@ -7,9 +9,9 @@ from gen.CompilerParser import CompilerParser
 
 
 if __name__ == '__main__':
-    dados = FileStream('input.txt')
+    filename = 'input'
+    dados = FileStream(f"{filename}.txt")
     lexer = CompilerLexer(dados)
-    filename = 'input2'
 
     # Manipulação do arquivo de tokens para acessar o ID de cada TOKEN pelo nome
     with open('gen/Compiler.tokens', 'r+') as tT:
@@ -43,15 +45,11 @@ if __name__ == '__main__':
     listenerlib = MyListener(filename)
     treewalker = ParseTreeWalker()
     treewalker.walk(listenerlib, tree)
-    """
-
     jasminFile = filename + '.j'
     os.system(f'java -jar jasmin.jar {jasminFile}')
     #execFile = jasminFile.removesuffix('.class')
     #print(execFile)
     os.system(f'java {jasminFile}')
-    """
-    print(tree.toStringTree())
     with open('output.txt', 'w+') as saida:     # Imprimindo os tokens e os tipos dos tokens no arquivo
         saida.write(output)
 
