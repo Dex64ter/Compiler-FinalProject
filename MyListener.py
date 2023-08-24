@@ -1,3 +1,5 @@
+import re
+
 from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
 
@@ -23,7 +25,12 @@ class MyListener(CompilerListener):
 
     def flag(self, ctx_print):
         declaration = ctx_print.getText()
-        print(f"{declaration}")
+        print('Symbol Table:')
+        for key, val in self.symbol_table.items():
+           print(f"Key {key}: Value {val}\n")
+#        print(f"CTX: {ctx_print}\n"
+#             f"CTX.getText: {declaration}\n"
+#             f"symbol_table len: {self.symbol_table.__len__()}")
 
     def __is_inside_function(self):
         return 'function' in self.stack_block
@@ -38,13 +45,11 @@ class MyListener(CompilerListener):
     def enterDecFuncao(self, ctx: CompilerParser.DecFuncaoContext):
         print('Enter DecFunc', self.flag(ctx))
         self.stack_block.append('function')
-        func_name = ctx.VARNAME().getText()
-        print(ctx.VARNAME().getText(), "\n", ctx.VARTYPE().getText())
+        func_name = str(ctx.VARNAME())
         if func_name in self.symbol_table:
             raise AlreadyDeclaredError(ctx.start.line, func_name)
         func_type = ctx.VARTYPE().getText()
-
-        self.symbol_table[func_name] = CustomListener(type=f"{func_type}")
+        self.symbol_table[func_name] = CustomListener(type=func_type)
 
         args = []
         args_names = []
@@ -61,7 +66,7 @@ class MyListener(CompilerListener):
 
         # Zip varnames and vartypes together
         content = list(zip(varnames[1:], vartypes[1:]))
-        print(content)
+        #print(content)
         for arg_nm, arg_type in content:
             if arg_nm.getText() in self.symbol_table:
                 raise AlreadyDeclaredError(ctx.start.line, arg_nm.getText())
@@ -79,7 +84,7 @@ class MyListener(CompilerListener):
 
     def enterCallFunction(self, ctx: CompilerParser.CallFunctionContext):
         print('Enter CallFunc', self.flag(ctx))
-        ctx_name = ctx.VARNAME().getText()
+        ctx_name = ctx.VARNAME()
         if ctx_name not in self.symbol_table:
             raise NonDeclaredVariableError(ctx.start.line, ctx_name)
 
@@ -131,16 +136,18 @@ class MyListener(CompilerListener):
 
     def enterMain(self, ctx: CompilerParser.MainContext):
         print('Enter Main', self.flag(ctx))
+        self.stack_block.append('function')
         self.jasmin.write_main_function_declaration()
 
     def exitMain(self, ctx: CompilerParser.MainContext):
         print('Exit Main', self.flag(ctx))
         self.jasmin.write_main_function_end()
+        self.stack_block.pop()
 
     def enterDecVar(self, ctx: CompilerParser.DecVarContext):
         print('Enter DecVar', self.flag(ctx))
         if not self.__is_inside_function():
-            raise VariableDeclarationError(ctx.start.line, ctx.varlist().VARNAME())
+            raise VariableDeclarationError(ctx.start.line)
 
     def exitDecVar(self, ctx: CompilerParser.DecVarContext):
         print('Exit DecVar', self.flag(ctx))
@@ -149,14 +156,19 @@ class MyListener(CompilerListener):
         print('Enter Varlist', self.flag(ctx))
 
     def exitVarlist(self, ctx: CompilerParser.VarlistContext):
+        ctx_name = ctx.getText()
+        for token in ctx_name:
+            if token in self.symbol_table:
+                raise AlreadyDeclaredError(ctx.start.line, token)
+        ctx_type = ctx.VARTYPE()
+        palavras_entre_virgulas = re.findall(r'(\w+)', ctx_name)
+        print('aa', palavras_entre_virgulas)
+        palavras_entre_virgulas.pop()
+        for palavra in palavras_entre_virgulas:
+            self.symbol_table[palavra] = CustomListener(
+                address=0, type=ctx_type, local=True)
+            self.jasmin.create_local(palavra, ctx_type)
         print('Exit Varlist', self.flag(ctx))
-        ctx_name = ctx.VARNAME().getText()
-        ctx_type = ctx.VARTYPE().getText()
-        if ctx_name in self.symbol_table:
-            raise AlreadyDeclaredError(ctx.start.line, ctx_name)
-        self.symbol_table[ctx_name] = CustomListener(
-            address=0, type=ctx_type, local=True)
-        self.jasmin.create_local(ctx_name, ctx_type)
 
     def enterConsts(self, ctx: CompilerParser.ConstsContext):
         print('Enter Consts', self.flag(ctx))
@@ -179,7 +191,7 @@ class MyListener(CompilerListener):
 
     def exitFuncinput(self, ctx: CompilerParser.FuncinputContext):
         print('Exit Funcinput', self.flag(ctx))
-        ctx_name = ctx.VARNAME().getText()
+        ctx_name = ctx.VARNAME()
         if ctx_name not in self.symbol_table:
             raise NonDeclaredVariableError(ctx.start.line, ctx_name)
         self.jasmin.write_inputfunction_code(ctx_name)
@@ -216,12 +228,9 @@ class MyListener(CompilerListener):
         self.jasmin.write_dowhileexit_code(len(self.stack_block))
 
     def exitVar_name(self, ctx: CompilerParser.Var_nameContext):
-        ctx_name = ctx.VARNAME().getText()
-
-        if ctx_name not in self.symbol_table:
-            raise NonDeclaredVariableError(ctx.start.line, ctx_name)
-        ctx.type_ = self.symbol_table[ctx_name].type_
-        ctx.val = self.jasmin.write_variable_load(ctx_name)
+        ctx_name = ctx.getText()
+        print(f"CONTEXTO  {ctx.getText()}")
+        ctx.val = self.jasmin.write_store_code(ctx_name, 'str')
 
     def exitFloat_value(self, ctx: CompilerParser.Float_valueContext):
         print(f'Float Value: {ctx.getText()}')
@@ -248,8 +257,8 @@ class MyListener(CompilerListener):
         ctx.val = ctx.expr().val
 
     def exitE_termo(self, ctx:CompilerParser.E_termoContext):
-        ctx.type_ = ctx.expr().type_
-        ctx.val = ctx.expr().val
+        ctx.type_ = ctx.termo().type_
+        ctx.val = ctx.termo().val
 
     def exitSum_minus(self, ctx:CompilerParser.Sum_minusContext):
         if not self.__is_numeric(ctx.expressaoAritmetica().type_):
@@ -280,10 +289,9 @@ class MyListener(CompilerListener):
         else:
             ctx.val = self.jasmin.write_suboperator_code(ctx.type_, val1, val2)
 
-
     def exitE_factor(self, ctx:CompilerParser.E_factorContext):
-        ctx.type_ = ctx.expr().type_
-        ctx.val = ctx.expr().val
+        ctx.type_ = ctx.fator().type_
+        ctx.val = ctx.fator().val
 
     def exitTime_div(self, ctx:CompilerParser.Time_divContext):
         if not self.__is_numeric(ctx.termo().type_):
@@ -317,28 +325,12 @@ class MyListener(CompilerListener):
 
     def enterOpMath(self, ctx: CompilerParser.OpMathContext):
         print('Enter OpMath', self.flag(ctx))
-        var_name = ctx.VARNAME().getText()
-        operator = ctx.getChild(1).getText()  # Assuming the operator is the second child node
-        expression = ctx.getChild(2)  # Get the expression context
-
-        # Access the return values specified in the grammar
-        type = ctx.type_
-        inh_type = ctx.inh_type
-        isBool = ctx.isBool
-        val = ctx.val
 
     def exitOpMath(self, ctx: CompilerParser.OpMathContext):
         print('Exit OpMath', self.flag(ctx))
 
     def enterOpMathR(self, ctx: CompilerParser.OpMathRContext):
         print('Enter OpMathR', self.flag(ctx))
-        expression = ctx.getChild(0)  # Get the expression context (can be either Aritmetica or Booleana)
-
-        # Access the return values specified in the grammar
-        type = ctx.type_
-        inh_type = ctx.inh_type
-        isBool = ctx.isBool
-        val = ctx.val
 
     def exitOpMathR(self, ctx: CompilerParser.OpMathRContext):
         print('Exit OpMathR', self.flag(ctx))
@@ -349,10 +341,14 @@ class MyListener(CompilerListener):
     def exitExpressaoBooleana(self, ctx: CompilerParser.ExpressaoBooleanaContext):
         print('Exit ExpressaoBooleana', self.flag(ctx))
 
+    def enterExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
+        print('Enter ExpressaoRelacional', self.flag(ctx))
+        print(ctx)
+
     def exitExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
         ctx_t1 = ctx.expressaoAritmetica()
-        ctx_t2 = ctx.getChild(2)
-
+        ctx_t2 = ctx.getChild(1)
+        print(ctx_t1)
         if ctx_t1.type_ != ctx_t2.type_:
             raise ExpressionTypeError(
                 ctx.start.line, ctx.op.text, ctx_t1.type_, ctx_t2.type_
@@ -361,6 +357,8 @@ class MyListener(CompilerListener):
         ctx.val = self.jasmin.write_equaloperator_code(ctx_t1.type_, ctx_t2.val,
                                                        ctx_t2.type_, ctx_t2.val,
                                                        self.label_id, ctx.op.text)
+        self.label_id += 1
+        print('Exit ExpressaoRelacional', self.flag(ctx))
 
     def exitValorBool(self, ctx:CompilerParser.ValorBoolContext):
         ctx.type_ = 'bool'
