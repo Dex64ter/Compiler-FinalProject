@@ -3,8 +3,7 @@ grammar Compiler;
 prog: decFuncao* main;
 
 // Declaração de função
-decFuncao: VARNAME '(' argsFunc ')' ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
-argsFunc: (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ;    // argumentos da função
+decFuncao: VARNAME '(' (VARTYPE VARNAME (',' VARTYPE VARNAME)*)? ')' ':' ( 'void' | VARTYPE ) decVar* comandos* return* 'end';
 call: callFunction';' ;      // chamada de função com ;
 callFunction returns [type]: VARNAME '(' valsCallFunc? ')'; // (')'|');')
 valsCallFunc: (expressaoAritmetica) ((',' expressaoAritmetica)*)?;      // valores da chamada de função

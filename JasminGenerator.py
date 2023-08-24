@@ -13,8 +13,9 @@ def translate_type_name(vartype):
         'int': 'I',
         'integer': 'I',
         'float': 'F',
-        'string': 'Ljava/lang/String;',
+        'str': 'Ljava/lang/String;',
     }
+    print(vartype)
     return descriptor[vartype]
 
 
@@ -151,20 +152,7 @@ class JasminCodeGenerator:
                 invokevirtual java/io/PrintStream/print({})V
                 """.format(translate_type_name(type))
             )
-            self.__write(
-                """
-                getstatic java/lang/System/out Ljava/io/PrintStream;
-                ldc " "
-                invokevirtual java/io/PrintStream/print(Ljava/lang/String;)V
-                """
-            )
-        self.__write(
-            """
-            getstatic java/lang/System/out Ljava/io/PrintStream;
-            ldc ""
-            invokevirtual java/io/PrintStream/println(Ljava/lang/String;)V
-            """
-        )
+
 
     def write_multiplication_code(self, type, add1, add2):
         self.write_loadimmediate_code(add1, type)
