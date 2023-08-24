@@ -184,6 +184,7 @@ class MyListener(CompilerListener):
         val_type = []
         for expr in ctx.expressaoAritmetica():
             val_type.append((expr.type_, expr.val))
+            print(val_type)
         self.jasmin.print(val_type)
 
     def enterFuncinput(self, ctx: CompilerParser.FuncinputContext):
@@ -346,16 +347,15 @@ class MyListener(CompilerListener):
         print(ctx)
 
     def exitExpressaoRelacional(self, ctx:CompilerParser.ExpressaoRelacionalContext):
-        ctx_t1 = ctx.expressaoAritmetica()
-        ctx_t2 = ctx.getChild(1)
-        print(ctx_t1)
+        ctx_t1 = ctx.expressaoAritmetica()[1]
+        ctx_t2 = ctx.getChild(2)
+        print(ctx_t2.type_)
         if ctx_t1.type_ != ctx_t2.type_:
             raise ExpressionTypeError(
                 ctx.start.line, ctx.op.text, ctx_t1.type_, ctx_t2.type_
             )
         ctx.type_ = 'bool'
-        ctx.val = self.jasmin.write_equaloperator_code(ctx_t1.type_, ctx_t2.val,
-                                                       ctx_t2.type_, ctx_t2.val,
+        ctx.val = self.jasmin.write_equaloperator_code(ctx_t1.type_, ctx_t2.val, ctx_t2.val,
                                                        self.label_id, ctx.op.text)
         self.label_id += 1
         print('Exit ExpressaoRelacional', self.flag(ctx))

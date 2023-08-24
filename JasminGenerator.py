@@ -8,11 +8,10 @@ class CustomListener:
 
 def translate_type_name(vartype):
     descriptor = {
-        'NoneType': 'V',
+        'None': 'V',
         'bool': 'Z',
         'int': 'I',
         'integer': 'I',
-        'real': 'F',
         'float': 'F',
         'string': 'Ljava/lang/String;',
     }
